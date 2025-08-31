@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jay's Cart — Teeth Whitening Pen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+    /* ===== Base Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      /* Dark theme background */
+      background: #111;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== Canvas ===== */
+    .flyer {
+      width: 820px;
+      max-width: 96vw;
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+      /* Adjusted for dark theme */
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(25, 25, 25, 0.4);
+      backdrop-filter: blur(26px);
+    }
+
+    /* Soft glow accents - slightly brighter for dark bg */
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px); /* Increased blur for softer effect */
+      opacity: 0.5; /* Adjusted opacity */
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow.pink { width: 320px; height: 320px; background: radial-gradient(circle, rgba(255,153,204,0.35), rgba(255,153,204,0) 70%); top: -80px; left: -80px; }
+    .glow.violet { width: 260px; height: 260px; background: radial-gradient(circle, rgba(204,153,255,0.35), rgba(204,153,255,0) 70%); bottom: -60px; right: -60px; }
+
+    /* ===== Watermark (no tagline words) ===== */
+    .watermark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(56px, 12vw, 120px);
+      /* Increased visibility for dark theme */
+      color: rgba(255,255,255,0.08);
+      transform: rotate(-18deg);
+      letter-spacing: 1.5px;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      z-index: 0;
+      user-select: none;
+      pointer-events: none;
+    }
+    .watermark span { white-space: nowrap; }
+
+    /* ===== Header with Logo ===== */
+    .header {
+      position: relative;
+      z-index: 2;
+      padding: 24px 24px 8px 24px;
+    }
+    .brand {
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      /* Adjusted for dark theme */
+      background: rgba(35,35,35,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 18px 44px rgba(0,0,0,0.3);
+      min-height: 120px; /* Ensure consistent height */
+    }
+    .brand .logo-wrap {
+      position: relative;
+      display: inline-block;
+      isolation: isolate;
+    }
+    /* Subtle halo behind logo to blend with glass */
+    .brand .logo-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -10%;
+      border-radius: 20px;
+      background: radial-gradient(closest-corner, rgba(255,255,255,0.2), rgba(255,255,255,0) 70%);
+      filter: blur(12px);
+      z-index: -1;
+    }
+    .brand img.logo {
+      max-width: clamp(180px, 45%, 280px);
+      width: auto;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      image-rendering: -webkit-optimize-contrast;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4));
+      transition: transform 600ms ease, filter 600ms ease;
+    }
+    .brand:hover img.logo {
+      transform: translateY(-2px) scale(1.02);
+      filter: drop-shadow(0 12px 26px rgba(0,0,0,0.5));
+    }
+
+    /* ===== Content Grid ===== */
+    .content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 18px 24px 24px;
+    }
+    .card {
+      /* Adjusted for dark theme */
+      background: rgba(40, 40, 40, 0.4);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 18px;
+      backdrop-filter: blur(14px);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 10px 26px rgba(0,0,0,0.25);
+    }
+    .title {
+      text-align: center;
+      font-size: 22px;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: .3px;
+      margin-bottom: 12px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.25);
+    }
+
+    /* ===== Pen Illustration ===== */
+    .pen-graphic { display: grid; place-items: center; margin: 12px 0 6px; }
+    .pen {
+      width: 84px; height: 160px; position: relative;
+      animation: penFloat 6s ease-in-out infinite;
+    }
+    @keyframes penFloat { 0%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} 100%{ transform:translateY(0);} }
+    .pen-cap {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 36px; height: 22px; border-radius: 17px 17px 0 0;
+      background: linear-gradient(to bottom, #ff66b2 0%, #ff3399 100%);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+    .pen-body {
+      position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+      width: 32px; height: 108px; border-radius: 0 0 8px 8px;
+      background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 100%);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.1), 0 3px 10px rgba(0,0,0,0.2);
+    }
+    .pen-tip {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 26px; height: 26px; border-radius: 0 0 8px 8px;
+      background: linear-gradient(to bottom, #ff99cc 0%, #ff66b2 100%);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+    .shine {
+      position: absolute; top: 30px; left: 10px; width: 12px; height: 88px;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%);
+      transform: rotate(45deg);
+      animation: shine 4s ease-in-out infinite;
+    }
+    @keyframes shine { 0%{ left: -24px; } 50%{ left: 44px; } 100%{ left: -24px; } }
+
+    /* ===== Warning ===== */
+    .warning {
+      /* Adjusted for high contrast on dark theme */
+      background: rgba(255, 51, 102, 0.15);
+      border-left: 4px solid #ff3366;
+      color: #fce4ec; /* Lighter pink for text */
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 10px;
+      margin: 14px 0 6px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    .warning i { margin-right: 8px; color: #ff3366; }
+
+    /* ===== Manually Scrollable Instructions ===== */
+    .instructions {
+      height: 300px;
+      overflow-y: auto;
+      position: relative;
+      /* Custom scrollbar for dark theme */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 153, 204, 0.5) rgba(0, 0, 0, 0.1);
+    }
+    /* Webkit scrollbar styling */
+    .instructions::-webkit-scrollbar {
+      width: 6px;
+    }
+    .instructions::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+    }
+    .instructions::-webkit-scrollbar-thumb {
+      background: rgba(255, 153, 204, 0.5);
+      border-radius: 3px;
+    }
+    .instructions::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 153, 204, 0.7);
+    }
+    .steps {
+      display: grid;
+      gap: 10px;
+    }
+    .steps .instruction-step { 
+      display: flex; align-items: flex-start; gap: 10px;
+      /* Adjusted for dark theme */
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 10px;
+      color: #fff;
+      transition: transform .3s ease, background .3s ease;
+    }
+    .steps .instruction-step:hover { background: rgba(255,255,255,0.1); transform: translateX(4px); }
+    .step-number {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff66b2, #cc66ff);
+      display: grid; place-items: center;
+      color: #fff; font-weight: 700; font-size: 12px; flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+    .step-text { font-size: 14px; line-height: 1.42; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+
+    /* ===== Do's & Don'ts ===== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .info-title {
+      font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center;
+      gap: 8px; margin-bottom: 8px; text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+    }
+    .info-title i { color: #ff66b2; }
+    .info-content { color: #eee; font-size: 13px; line-height: 1.46; } /* Slightly off-white for softer text */
+    .info-box {
+      /* Adjusted for dark theme */
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    ul { margin: 0; padding-left: 20px; }
+
+    /* Footer */
+    .footer {
+      padding: 8px 24px 20px;
+      text-align: center;
+      color: #aaa; /* Softer color for footer */
+      font-size: 13px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* ===== RESPONSIVE DESIGN FOR PHONES ===== */
+    @media (max-width: 768px) {
+      body {
+        padding: 16px; /* Reduce padding on smaller screens */
+        align-items: flex-start; /* Prevent vertical centering that might cut off top */
+        justify-content: flex-start; /* Align to top on mobile */
+        min-height: 100vh; /* Ensure body takes full height */
+        height: auto; /* Allow body to expand beyond viewport */
+      }
+      .flyer {
+        margin: 0 auto; /* Center the flyer */
+      }
+      .content {
+        /* Stack columns vertically on mobile */
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+      }
+      .header {
+        padding: 16px 16px 8px;
+      }
+      .footer {
+        padding: 8px 16px 16px;
+      }
+      /* Adjust padding on the second content block */
+      .content.second-block {
+          padding-top: 0;
+      }
+      .instructions {
+        height: 250px; /* Slightly reduce height on mobile */
+      }
+      
+      /* Mobile-specific logo styling */
+      .brand img.logo {
+        max-width: 180px; /* Fixed size for mobile */
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="flyer">
+    <div class="glow pink"></div>
+    <div class="glow violet"></div>
+    <div class="watermark"><span>JAY'S CART</span></div>
+
+    <div class="header">
+      <div class="brand">
+        <div class="logo-wrap">
+          <!-- URL encoded filename for mobile compatibility -->
+          <img class="logo" src="https://github.com/bernicemerry/logo-hosting/blob/main/WhatsApp%20Image%202025-08-29%20at%2012.52.22%20PM%20(1).png?raw=true">
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="card">
+        <h2 class="title">Teeth Whitening Pen</h2>
+        <div class="pen-graphic">
+          <div class="pen">
+            <div class="pen-cap"></div>
+            <div class="pen-body"><div class="shine"></div></div>
+            <div class="pen-tip"></div>
+          </div>
+        </div>
+        <p class="warning"><i class="fas fa-exclamation-circle"></i> Not recommended for children under 12 or those with gum disease, cavities, or sensitive teeth. Discontinue use if irritation occurs.</p>
+      </section>
+
+      <section class="card instructions" aria-label="How to use">
+        <div class="steps" role="list">
+          <div class="instruction-step" role="listitem"><div class="step-number">1</div><div class="step-text">Brush and floss your teeth thoroughly before application.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">2</div><div class="step-text">Dry teeth with a tissue to ensure the gel adheres properly.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">3</div><div class="step-text">Twist the base of the pen until the gel appears at the brush tip.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">4</div><div class="step-text">Apply a thin, even layer to the front surface of your teeth.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">5</div><div class="step-text">Avoid getting the gel on your gums or lips.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">6</div><div class="step-text">Leave on for 5–15 minutes (start with shorter times if sensitive).</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">7</div><div class="step-text">Rinse thoroughly with water after treatment.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">8</div><div class="step-text">Wipe the brush tip clean and cap tightly after each use.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">9</div><div class="step-text">Use 1–2 times daily for best results.</div></div>
+          <div class="instruction-step" role="listitem"><div class="step-number">10</div><div class="step-text">Maintain with 1–2 uses per week after initial treatment.</div></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="content second-block" style="padding-top:0;">
+      <section class="card">
+        <div class="grid-2">
+          <div class="info-box">
+            <div class="info-title"><i class="fas fa-check-circle"></i> Do's</div>
+            <div class="info-content">
+              <ul>
+                <li>Brush before application</li>
+                <li>Dry teeth thoroughly</li>
+                <li>Apply evenly</li>
+                <li>Cap tightly after use</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-box">
+            <div class="info-title"><i class="fas fa-times-circle"></i> Don'ts</div>
+            <div class="info-content">
+              <ul>
+                <li>Use on irritated gums</li>
+                <li>Swallow the gel</li>
+                <li>Exceed 15 minutes</li>
+                <li>Use more than directed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <h2 class="title">Results</h2>
+        <div class="info-content">
+          Experience a brighter smile with consistent use. For best outcomes, avoid staining foods and drinks for at least 1 hour after each session.
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">Jay's Cart — Premium beauty products & accessories</div>
+  </div>
+
+  <script>
+    // Fallback for logo if the original doesn't load
+    document.addEventListener('DOMContentLoaded', function() {
+      const logo = document.querySelector('.brand img.logo');
+      
+      // Check if logo loaded properly after a short delay
+      setTimeout(function() {
+        if (logo && (logo.naturalWidth === 0 || logo.complete === false)) {
+          // If logo didn't load, try the direct link as fallback
+          logo.src = "https://drive.google.com/uc?export=view&id=1OHtgoH-ltcdWZaEuXtTMTbGqtCIS5a38";
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
